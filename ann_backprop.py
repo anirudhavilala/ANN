@@ -1,24 +1,21 @@
-#!/usr/bin/env python3
 import numpy as np
 from io import StringIO
-NUM_FEATURES = 124 #features are 1 through 123 (123 only in test set), +1 for the bias
-DATA_PATH = "/u/cs246/data/adult/" #TODO: if doing development somewhere other than the cycle server, change this to the directory where a7a.train, a7a.dev, and a7a.test are
+NUM_FEATURES = 124 #features + bias
+DATA_PATH = "/u/data/adult/"
 
-#returns the label and feature value vector for one datapoint (represented as a line (string) from the data file)
 def parse_line(line):
     tokens = line.split()
     x = np.zeros(NUM_FEATURES)
     y = int(tokens[0])
-    y = max(y,0) #treat -1 as 0 instead, because sigmoid's range is 0-1
+    y = max(y,0)
     for t in tokens[1:]:
         parts = t.split(':')
         feature = int(parts[0])
         value = int(parts[1])
         x[feature-1] = value
-    x[-1] = 1 #bias
+    x[-1] = 1 # bias
     return y, x
 
-#return labels and feature vectors for all datapoints in the given file
 def parse_data(filename):
     with open(filename, 'r') as f:
         vals = [parse_line(line) for line in f]
@@ -28,7 +25,6 @@ def parse_data(filename):
 def init_model(args):
     w1 = None
     w2 = None
-
     if args.weights_files:
         with open(args.weights_files[0], 'r') as f1:
             w1 = np.loadtxt(f1)
@@ -36,15 +32,13 @@ def init_model(args):
             w2 = np.loadtxt(f2)
             w2 = w2.reshape(1,len(w2))
     else:
-        #TODO (optional): If you want, you can experiment with a different random initialization. As-is, each weight is uniformly sampled from [-0.5,0.5).
-        w1 = np.random.rand(args.hidden_dim, NUM_FEATURES) #bias included in NUM_FEATURES
-        w2 = np.random.rand(1, args.hidden_dim + 1) #add bias column
+        #random initialization.
+        w1 = np.random.rand(args.hidden_dim, NUM_FEATURES) 
+        w2 = np.random.rand(1, args.hidden_dim + 1)
 
     #At this point, w1 has shape (hidden_dim, NUM_FEATURES) and w2 has shape (1, hidden_dim + 1). In both, the last column is the bias weights.
-    #TODO: Replace this with whatever you want to use to represent the network; you could use use a tuple of (w1,w2), make a class, etc.
     model = {}
     model={0:w1,1:w2}
-#    raise NotImplementedError #TODO: delete this once you implement this function
     return model
 
 def sigm(x):
@@ -52,7 +46,6 @@ def sigm(x):
     return sig
 
 def train_model(model, train_ys, train_xs, dev_ys, dev_xs, args):
-    #TODO: Implement training for the given model, respecting args#
     delt,dewl = {},{}
     if args.nodev:
         for i in range(args.iterations):
@@ -92,9 +85,7 @@ def train_model(model, train_ys, train_xs, dev_ys, dev_xs, args):
                 if abs(ld[i]-lt[i])< dif: 
                     weights=model
                     dif = abs(ld[i]-lt[i])
-        model = weights
-        
-#    raise NotImplementedError #TODO: delete this once you implement this function
+        model = weights        
     return model
 
 def deriv(weights,inpt):
@@ -116,15 +107,11 @@ def test_accuracy(model, test_ys, test_xs):
         else: pys[i,0] = 0
     accuracy = np.sum(pys==test_ys)/len(test_ys)
     return accuracy
-    #TODO: Implement accuracy computation of given model on the test data
-#    raise NotImplementedError #TODO: delete this once you implement this function
 
 def extract_weights(model):
     w1 = None
     w2 = None
-    #TODO: Extract the two weight matrices from the model and return them (they should be the same type and shape as they were in init_model, but now they have been updated during training)
     w1,w2 = model[0],model[1]
-#    raise NotImplementedError #TODO: delete this once you implement this function
     return w1, w2
 
 def main():
@@ -145,7 +132,6 @@ def main():
     parser.add_argument('--train_file', type=str, default=os.path.join(DATA_PATH,'a7a.train'), help='Training data file.')
     parser.add_argument('--dev_file', type=str, default=os.path.join(DATA_PATH,'a7a.dev'), help='Dev data file.')
     parser.add_argument('--test_file', type=str, default=os.path.join(DATA_PATH,'a7a.test'), help='Test data file.')
-
 
     args = parser.parse_args()
 
